@@ -9,6 +9,8 @@ from flask import Flask, jsonify, request
 
 from markupsafe import Markup
 class Blockchain:
+    FVALUE_THRESHOLD = 14
+
     def __init__(self):
         self.current_transactions = []
         self.chain = []
@@ -134,6 +136,33 @@ class Blockchain:
 
         return self.last_block['index'] + 1
 
+    def f_value(self, block):
+
+        if len(block["transactions"]) == 0:
+            return True
+
+        edges_chain = list()
+        amount = 0
+        for transaction in block["transactions"]:
+            amount += transaction["amount"]
+            sender = transaction["sender"]
+            recipient = transaction["recipient"]
+            edges_chain.append((sender, recipient))
+        E = len(edges_chain)
+        V_a = amount / len(block["transactions"])
+        f = E / V_a
+        
+        return f
+
+    def check_block(self, block):
+        if self.f_value(block) <= self.FVALUE_THRESHOLD:
+            return True
+        else:
+            return False
+
+    def clear_transactions(self):
+        self.chain[-1]["transactions"] = list()
+
     @property
     def last_block(self):
         return self.chain[-1]
@@ -195,8 +224,18 @@ blockchain = Blockchain()
 
 @app.route('/mine', methods=['GET'])
 def mine():
-    # We run the proof of work algorithm to get the next proof...
     last_block = blockchain.last_block
+
+    # check if block is not DDOS-attacked
+    isOK = blockchain.check_block(last_block)
+
+    if not isOK:
+        blockchain.clear_transactions()
+        
+        response = {'message' : "DDOS-attack detected"} 
+        return jsonify(response), 500
+
+    # We run the proof of work algorithm to get the next proof...
     proof = blockchain.proof_of_work(last_block)
 
     # We must receive a reward for finding the proof.

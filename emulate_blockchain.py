@@ -25,7 +25,7 @@ to_mine = random.choice(mine_iterate_list)
 
 timeframe = time.time()
 
-for id in range(100000):
+for id in range(1000):
     if id - last_mine > to_mine:
         requests.get(url=mine_uri)
         to_mine = random.choice(mine_iterate_list)

@@ -3,10 +3,8 @@ import json
 import random
 import numpy as np
 import time
-trans_uri = "http://192.168.0.16:5000/transactions/new"
-mine_uri = "http://192.168.0.16:5000/mine"
-
-
+trans_uri = "http://192.168.0.22:5000/transactions/new"
+mine_uri = "http://192.168.0.22:5000/mine"
 
 sender_list = [x for x in range(5000)]
 amount_list = np.random.normal(4000,1000, 10000) 
@@ -68,7 +66,7 @@ for id in range(100000):
         cnt = 0
     if id - last_ddos > random.choice(ts_trans_diffs_ddos) and  block_id in ddos_block_ids:
         last_ddos = id
-        for _ in range(300):
+        for _ in range(100):
             last_ddos_ts += 1
             send_ddos(last_ddos_ts)
 
